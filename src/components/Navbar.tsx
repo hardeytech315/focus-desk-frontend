@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, ListTodo, LogOut, Menu, X, Flame } from 'lucide-react';
+import { LayoutDashboard, ListTodo, LogOut, Menu, X, Flame, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -28,15 +30,10 @@ const Navbar = () => {
           <span className="text-xl font-bold tracking-tight text-foreground">FocusDesk</span>
         </Link>
 
-        {/* Desktop */}
         <div className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => (
             <Link key={link.to} to={link.to}>
-              <Button
-                variant={isActive(link.to) ? 'secondary' : 'ghost'}
-                size="sm"
-                className="gap-2"
-              >
+              <Button variant={isActive(link.to) ? 'secondary' : 'ghost'} size="sm" className="gap-2">
                 <link.icon className="h-4 w-4" />
                 {link.label}
               </Button>
@@ -45,11 +42,12 @@ const Navbar = () => {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
+            {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </Button>
           {isAuthenticated ? (
             <>
-              <span className="text-sm text-muted-foreground">
-                {user?.name}
-              </span>
+              <span className="text-sm text-muted-foreground">{user?.name}</span>
               <Button variant="ghost" size="sm" onClick={logout} className="gap-2">
                 <LogOut className="h-4 w-4" /> Logout
               </Button>
@@ -66,13 +64,16 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile toggle */}
-        <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
+            {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </Button>
+          <button onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 pb-4 pt-2 md:hidden animate-fade-in">
           {navLinks.map((link) => (

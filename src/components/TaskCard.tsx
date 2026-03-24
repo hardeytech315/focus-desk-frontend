@@ -1,10 +1,13 @@
-import { Task } from '@/types';
+import { memo } from 'react';
+import type { Task } from '@/types';
 import { useTasks } from '@/context/TaskContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Pencil, Trash2, CheckCircle2, Circle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format, isPast } from 'date-fns';
+import { format } from 'date-fns';
+import { getDeadlineStatus } from '@/utils/deadline';
+import ProgressBar from '@/components/ProgressBar';
 
 const statusConfig = {
   pending: { label: 'Pending', icon: Circle, class: 'bg-muted text-muted-foreground' },
@@ -18,16 +21,18 @@ const priorityConfig = {
   high: 'bg-destructive/10 text-destructive',
 };
 
+const progressMap = { pending: 0, 'in-progress': 50, completed: 100 };
+
 interface TaskCardProps {
   task: Task;
   onEdit: (task: Task) => void;
 }
 
-const TaskCard = ({ task, onEdit }: TaskCardProps) => {
+const TaskCard = memo(({ task, onEdit }: TaskCardProps) => {
   const { updateTask, deleteTask } = useTasks();
   const status = statusConfig[task.status];
   const StatusIcon = status.icon;
-  const isOverdue = task.status !== 'completed' && isPast(new Date(task.deadline));
+  const deadline = getDeadlineStatus(task);
 
   return (
     <motion.div
@@ -52,9 +57,13 @@ const TaskCard = ({ task, onEdit }: TaskCardProps) => {
             </Badge>
           </div>
           <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2">{task.description}</p>
-          <div className={`mt-2 flex items-center gap-1 text-xs ${isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-            <Calendar className="h-3 w-3" />
-            {isOverdue ? 'Overdue: ' : ''}{format(new Date(task.deadline), 'MMM d, yyyy')}
+          <div className={`mt-2 flex items-center gap-1 text-xs ${deadline.color}`}>
+            {deadline.emoji} <Calendar className="h-3 w-3" />
+            {deadline.label !== 'On Track' && deadline.label !== 'Completed' ? `${deadline.label}: ` : ''}
+            {format(new Date(task.deadline), 'MMM d, yyyy')}
+          </div>
+          <div className="mt-3 max-w-xs">
+            <ProgressBar value={progressMap[task.status]} />
           </div>
         </div>
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -73,6 +82,8 @@ const TaskCard = ({ task, onEdit }: TaskCardProps) => {
       </div>
     </motion.div>
   );
-};
+});
+
+TaskCard.displayName = 'TaskCard';
 
 export default TaskCard;

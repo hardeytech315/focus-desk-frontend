@@ -4,7 +4,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const TaskFilters = () => {
+interface TaskFiltersProps {
+  searchRef?: React.RefObject<HTMLInputElement>;
+}
+
+const TaskFilters = ({ searchRef }: TaskFiltersProps) => {
   const { filters, setFilters } = useTasks();
 
   return (
@@ -12,7 +16,8 @@ const TaskFilters = () => {
       <div className="relative flex-1 min-w-[200px]">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search tasks..."
+          ref={searchRef}
+          placeholder="Search tasks... (press /)"
           value={filters.search}
           onChange={(e) => setFilters({ search: e.target.value })}
           className="pl-9"
@@ -48,6 +53,7 @@ const TaskFilters = () => {
         variant="ghost"
         size="icon"
         onClick={() => setFilters({ sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc' })}
+        title={`Sort ${filters.sortOrder === 'asc' ? 'descending' : 'ascending'}`}
       >
         <ArrowUpDown className="h-4 w-4" />
       </Button>

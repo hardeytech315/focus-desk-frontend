@@ -11,8 +11,8 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo mode: mock auth when no backend is available
 const DEMO_MODE = true;
+const STORAGE_KEY = 'focusdesk_user';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<AuthState>({
@@ -22,7 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem('focusdesk_user');
+    const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const user = JSON.parse(stored) as User;
       setState({ user, isAuthenticated: true, isLoading: false });
@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data } = await authAPI.login({ email, password });
         user = data;
       }
-      localStorage.setItem('focusdesk_user', JSON.stringify(user));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
       setState({ user, isAuthenticated: true, isLoading: false });
       toast({ title: 'Welcome back!', description: `Logged in as ${user.name}` });
     } catch {
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data } = await authAPI.register({ name, email, password });
         user = data;
       }
-      localStorage.setItem('focusdesk_user', JSON.stringify(user));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
       setState({ user, isAuthenticated: true, isLoading: false });
       toast({ title: 'Account created!', description: `Welcome, ${name}` });
     } catch {
@@ -74,7 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('focusdesk_user');
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('focusdesk_tasks');
     setState({ user: null, isAuthenticated: false, isLoading: false });
     toast({ title: 'Logged out', description: 'See you next time!' });
   }, []);
