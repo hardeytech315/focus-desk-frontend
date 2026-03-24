@@ -31,6 +31,10 @@ export interface DashboardStats {
   pending: number;
   overdue: number;
   inProgress: number;
+  completedToday: number;
+  dueToday: number;
+  dueThisWeek: number;
+  highPriority: number;
 }
 
 export interface TaskFilters {

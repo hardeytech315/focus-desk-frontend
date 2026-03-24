@@ -4,7 +4,11 @@ import StatsCard from '@/components/StatsCard';
 import ProgressBar from '@/components/ProgressBar';
 import TaskCard from '@/components/TaskCard';
 import TaskForm from '@/components/TaskForm';
-import { ListTodo, CheckCircle2, Clock, AlertTriangle, Loader2 } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
+import WeeklyChart from '@/components/WeeklyChart';
+import PriorityChart from '@/components/PriorityChart';
+import { DashboardSkeleton } from '@/components/TaskCardSkeleton';
+import { ListTodo, CheckCircle2, Clock, AlertTriangle, CalendarCheck, CalendarDays, CalendarClock, Flame, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { Task } from '@/types';
 import { Navigate } from 'react-router-dom';
@@ -13,6 +17,7 @@ const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const { tasks, stats, isLoading } = useTasks();
   const [editTask, setEditTask] = useState<Task | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
 
   if (!isAuthenticated) return <Navigate to="/login" />;
 
@@ -21,8 +26,8 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <DashboardSkeleton />
       </div>
     );
   }
@@ -43,15 +48,27 @@ const Dashboard = () => {
         <StatsCard title="Overdue" value={stats.overdue} icon={AlertTriangle} color="destructive" />
       </div>
 
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatsCard title="Completed Today" value={stats.completedToday} icon={CalendarCheck} color="success" />
+        <StatsCard title="Due Today" value={stats.dueToday} icon={CalendarDays} color="warning" />
+        <StatsCard title="Due This Week" value={stats.dueThisWeek} icon={CalendarClock} color="info" />
+        <StatsCard title="High Priority" value={stats.highPriority} icon={Flame} color="destructive" />
+      </div>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <WeeklyChart />
+        <PriorityChart />
+      </div>
+
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <h2 className="mb-4 text-lg font-semibold text-foreground">Recent Tasks</h2>
           <div className="space-y-3">
             {recentTasks.map((task) => (
-              <TaskCard key={task._id} task={task} onEdit={setEditTask} />
+              <TaskCard key={task._id} task={task} onEdit={(t) => { setEditTask(t); setFormOpen(true); }} />
             ))}
             {recentTasks.length === 0 && (
-              <p className="py-8 text-center text-muted-foreground">No tasks yet. Create your first task!</p>
+              <EmptyState onAction={() => setFormOpen(true)} />
             )}
           </div>
         </div>
@@ -77,7 +94,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <TaskForm open={!!editTask} onClose={() => setEditTask(null)} editTask={editTask} />
+      <TaskForm open={formOpen || !!editTask} onClose={() => { setFormOpen(false); setEditTask(null); }} editTask={editTask} />
     </div>
   );
 };
